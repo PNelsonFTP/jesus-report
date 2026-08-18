@@ -1,0 +1,205 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { XMLParser } from "fast-xml-parser";
+import { SOURCES } from "./sources";
+
+interface Target {
+  name: string;
+  url: string;
+  category?: string;
+}
+
+interface Verdict {
+  name: string;
+  url: string;
+  category?: string;
+  verdict: string;
+  httpStatus?: number;
+  finalUrl?: string;
+  redirected?: boolean;
+  itemCount?: number;
+  newestAgeDays?: number | null;
+  note?: string;
+}
+
+const PARSER = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+  processEntities: {
+    enabled: true,
+    maxEntitySize: 100000,
+    maxTotalExpansions: 100000,
+    maxExpandedLength: 1000000,
+    maxEntityCount: 100000,
+  },
+});
+const UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+const STALE_DAYS = 60;
+const CONCURRENCY = 8;
+
+function isTransient(v: Verdict): boolean {
+  if (["TIMEOUT", "HTTP_429", "HTTP_502", "HTTP_503"].includes(v.verdict)) return true;
+  let host = "";
+  try {
+    host = new URL(v.url).hostname;
+  } catch {
+    /* ignore */
+  }
+  if (host.includes("substack.com") && ["HTTP_403", "HTTP_429", "TIMEOUT"].includes(v.verdict)) return true;
+  return false;
+}
+
+function looksLikeFeed(body: string, contentType: string): boolean {
+  const ct = contentType.split(";")[0].trim();
+  if (ct.includes("xml") || ct.includes("rss") || ct.includes("atom")) return true;
+  const head = body.slice(0, 600).trim();
+  return /^<\?xml/.test(head) || /^<rss/.test(head) || /^<feed/.test(head) || /^<rdf/i.test(head);
+}
+
+function extractItems(json: Record<string, unknown>): unknown[] {
+  const rss = (json?.rss as { channel?: { item?: unknown } } | undefined)?.channel?.item;
+  if (rss) return Array.isArray(rss) ? rss : [rss];
+  const atom = (json?.feed as { entry?: unknown } | undefined)?.entry;
+  if (atom) return Array.isArray(atom) ? atom : [atom];
+  const rdfRoot = (json?.["rdf:RDF"] ?? json?.rdf) as { item?: unknown } | undefined;
+  const rdf = rdfRoot?.item;
+  if (rdf) return Array.isArray(rdf) ? rdf : [rdf];
+  return [];
+}
+
+function newestDate(items: unknown[]): Date | null {
+  let newest: Date | null = null;
+  for (const it of items) {
+    const rec = it as Record<string, unknown>;
+    const raw = rec?.pubDate ?? rec?.published ?? rec?.updated ?? rec?.["dc:date"] ?? rec?.date ?? null;
+    const s = typeof raw === "string" ? raw : (raw as { "#text"?: string } | null)?.["#text"];
+    if (!s) continue;
+    const d = new Date(s);
+    if (!isNaN(d.getTime()) && (!newest || d > newest)) newest = d;
+  }
+  return newest;
+}
+
+async function checkOne(t: Target): Promise<Verdict> {
+  let lastStatus: number | undefined;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    try {
+      const res = await fetch(t.url, {
+        headers: {
+          "User-Agent": UA,
+          Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
+        },
+        signal: ctl.signal,
+        redirect: "follow",
+      });
+      lastStatus = res.status;
+      const finalUrl = res.url;
+      const redirected =
+        new URL(finalUrl).host.replace(/^www\./, "") !== new URL(t.url).host.replace(/^www\./, "");
+      if (!res.ok) {
+        if (res.status >= 500 || res.status === 429) continue;
+        return { ...t, verdict: `HTTP_${res.status}`, httpStatus: res.status, finalUrl, redirected };
+      }
+      const body = await res.text();
+      const contentType = (res.headers.get("content-type") || "").toLowerCase();
+      if (!looksLikeFeed(body, contentType)) {
+        return {
+          ...t, verdict: "NOT_FEED", httpStatus: res.status, finalUrl, redirected,
+          note: contentType.split(";")[0] || "unknown content-type",
+        };
+      }
+      let json: Record<string, unknown>;
+      try {
+        json = PARSER.parse(body) as Record<string, unknown>;
+      } catch {
+        return { ...t, verdict: "PARSE_FAIL", httpStatus: res.status, finalUrl, redirected };
+      }
+      const items = extractItems(json);
+      if (items.length === 0) {
+        return { ...t, verdict: "EMPTY", httpStatus: res.status, finalUrl, redirected, itemCount: 0 };
+      }
+      const newest = newestDate(items);
+      const ageDays = newest ? (Date.now() - newest.getTime()) / 86_400_000 : null;
+      const verdict = ageDays !== null && ageDays > STALE_DAYS ? "STALE" : "OK";
+      return {
+        ...t, verdict, httpStatus: res.status, finalUrl, redirected,
+        itemCount: items.length,
+        newestAgeDays: ageDays === null ? null : Math.round(ageDays * 10) / 10,
+      };
+    } catch {
+      /* retry */
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  return { ...t, verdict: lastStatus ? `HTTP_${lastStatus}` : "TIMEOUT", httpStatus: lastStatus };
+}
+
+async function run(targets: Target[]): Promise<Verdict[]> {
+  const out: Verdict[] = [];
+  let i = 0;
+  async function worker() {
+    while (i < targets.length) {
+      const t = targets[i++];
+      const v = await checkOne(t);
+      const age = v.newestAgeDays != null ? `${v.newestAgeDays}d` : "-";
+      const redir = v.redirected ? ` → ${v.finalUrl}` : "";
+      console.log(
+        `  ${v.verdict.padEnd(10)} ${String(v.itemCount ?? "-").padStart(3)} items  newest ${age.padStart(7)}  ${v.name}${redir}`
+      );
+      out.push(v);
+    }
+  }
+  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+  return out;
+}
+
+async function main() {
+  let targets: Target[];
+  const arg = process.argv[2];
+  if (arg) {
+    targets = JSON.parse(await readFile(arg, "utf-8")) as Target[];
+    console.log(`Validating ${targets.length} candidate feeds from ${arg}…`);
+  } else {
+    targets = SOURCES.map((s) => ({ name: s.name, url: s.url, category: s.category }));
+    console.log(`Validating ${targets.length} configured feeds…`);
+  }
+
+  const verdicts = await run(targets);
+  verdicts.sort((a, b) => a.verdict.localeCompare(b.verdict) || a.name.localeCompare(b.name));
+
+  const bad = verdicts.filter((v) => v.verdict !== "OK");
+  const transient = bad.filter(isTransient);
+  const actionable = bad.filter((v) => !isTransient(v));
+  console.log(`\n=== FEED VALIDATION: ${verdicts.length - bad.length}/${verdicts.length} OK ===`);
+  for (const v of bad) {
+    const tag = isTransient(v) ? " (transient)" : "";
+    console.log(`  ${v.verdict.padEnd(10)} ${v.name.padEnd(30)} ${v.url}${v.note ? `  (${v.note})` : ""}${tag}`);
+  }
+  const moved = verdicts.filter((v) => v.redirected && v.verdict === "OK");
+  if (moved.length) {
+    console.log(`\n=== REDIRECTED (update URLs) ===`);
+    for (const v of moved) console.log(`  ${v.name}: ${v.url} → ${v.finalUrl}`);
+  }
+
+  const outPath = process.env.VALIDATE_OUT;
+  if (outPath) {
+    await writeFile(outPath, JSON.stringify(verdicts, null, 2));
+    console.log(`\nWrote ${outPath}`);
+  }
+
+  if (actionable.length > 0) {
+    console.error(`\n❌ ${actionable.length} actionable feed problem${actionable.length === 1 ? "" : "s"}`);
+    process.exit(1);
+  }
+  if (transient.length > 0) {
+    console.log(`\n⚠ ${transient.length} transient failures ignored for the exit code`);
+  }
+}
+
+main().catch((e) => {
+  console.error("validate-feeds failed:", e);
+  process.exit(1);
+});

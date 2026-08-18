@@ -1,0 +1,47 @@
+name: Weekly feed audit
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Audit production deps (high+)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Full dependency audit (warning)
+        if: always()
+        run: npm audit
+        continue-on-error: true
+
+      - name: Validate all feeds
+        if: always()
+        env:
+          VALIDATE_OUT: ${{ runner.temp }}/feed-audit.json
+        run: npm run validate:feeds
+
+      - name: Open or update feed-audit issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VALIDATE_OUT: ${{ runner.temp }}/feed-audit.json
+        run: npx tsx scripts/report-feed-audit.ts
