@@ -224,6 +224,8 @@ export default function App() {
     return cols;
   }, [filteredCategories]);
 
+  const columnVerses = [odbVerse, bibleGatewayVerse, youVersionVerse];
+
   const mutedCount = mutedSources.size + mutedCategories.size;
 
   return (
@@ -243,7 +245,6 @@ export default function App() {
         search={search}
         onSearchChange={setSearch}
         churchYearLine={headlines?.churchYear?.line}
-        featuredVerse={odbVerse}
       />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6">
@@ -289,38 +290,37 @@ export default function App() {
             )}
             <LatestStrip articles={latestArticles} onHover={showHover} onHoverEnd={hideHover} />
 
-            <DailyVerse verse={bibleGatewayVerse} variant="pullquote" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {columns.map((col, i) => (
+                <div key={i} className="space-y-6">
+                  <DailyVerse verse={columnVerses[i]} />
+                  {col.map((bucket) => (
+                    <CategoryColumn
+                      key={bucket.id}
+                      bucket={bucket}
+                      bookmarkSet={bookmarks}
+                      queueSet={queue}
+                      mutedSources={mutedSources}
+                      onToggleBookmark={toggleBookmark}
+                      onToggleQueue={toggleQueue}
+                      onMuteSource={toggleMuteSource}
+                      onMuteCategory={toggleMuteCategory}
+                      onHover={showHover}
+                      onHoverEnd={hideHover}
+                      onRequestFull={loadFull}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
 
-            {filteredCategories.length === 0 ? (
+            {filteredCategories.length === 0 && (
               <div className="opacity-60 text-center py-12">
                 {search
                   ? "No headlines match your search."
                   : mutedCategories.size > 0 || mutedSources.size > 0
                     ? "All sections hidden — click ✕ in the header to restore."
                     : "No headlines available right now."}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {columns.map((col, i) => (
-                  <div key={i} className="space-y-6">
-                    {col.map((bucket) => (
-                      <CategoryColumn
-                        key={bucket.id}
-                        bucket={bucket}
-                        bookmarkSet={bookmarks}
-                        queueSet={queue}
-                        mutedSources={mutedSources}
-                        onToggleBookmark={toggleBookmark}
-                        onToggleQueue={toggleQueue}
-                        onMuteSource={toggleMuteSource}
-                        onMuteCategory={toggleMuteCategory}
-                        onHover={showHover}
-                        onHoverEnd={hideHover}
-                        onRequestFull={loadFull}
-                      />
-                    ))}
-                  </div>
-                ))}
               </div>
             )}
           </>
@@ -362,9 +362,7 @@ export default function App() {
           />
         )}
 
-        <DailyVerse verse={youVersionVerse} variant="footer" />
-
-        <footer className="mt-8 pt-6 border-t border-current border-opacity-20 text-[11px] opacity-50 flex flex-wrap items-center justify-between gap-2">
+        <footer className="mt-12 pt-6 border-t border-current border-opacity-20 text-[11px] opacity-50 flex flex-wrap items-center justify-between gap-2">
           <span>
             The Jesus Report — faith-related headlines, refreshed hourly.{" "}
             <a href={`${import.meta.env.BASE_URL}feed.xml`} className="underline hover:opacity-100">

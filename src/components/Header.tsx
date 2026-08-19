@@ -1,6 +1,3 @@
-import type { DailyVerse as DailyVerseData } from "../lib/types";
-import { DailyVerse } from "./DailyVerse";
-
 interface HeaderProps {
   theme: "dark" | "light";
   onToggleTheme: () => void;
@@ -15,7 +12,6 @@ interface HeaderProps {
   search: string;
   onSearchChange: (s: string) => void;
   churchYearLine?: string | null;
-  featuredVerse?: DailyVerseData | null;
 }
 
 function relativeUpdated(generatedAt: string | null): { label: string; stale: boolean } {
@@ -45,7 +41,6 @@ export function Header({
   search,
   onSearchChange,
   churchYearLine,
-  featuredVerse,
 }: HeaderProps) {
   const { label: updatedLabel, stale: dataStale } = relativeUpdated(generatedAt);
 
@@ -63,7 +58,6 @@ export function Header({
             {churchYearLine && (
               <p className="text-[12px] italic opacity-70 mt-1">{churchYearLine}</p>
             )}
-            <DailyVerse verse={featuredVerse ?? null} variant="masthead" />
           </div>
 
           <div className="flex items-center gap-2 text-xs flex-wrap justify-end">
