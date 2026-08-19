@@ -3,11 +3,12 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { fetchAllFeeds } from "./fetch-feeds";
+import { fetchDailyVerses } from "./fetch-verses";
 import { generateBrief } from "./generate-brief";
 import { buildCategories } from "./lib/router";
 import { buildSiteFeed } from "./lib/emitFeed";
 import { churchYearLine } from "./lib/churchYear";
-import type { HeadlinesPayload } from "./types";
+import type { HeadlinesPayload, VersesPayload } from "./types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = resolve(__dirname, "../public/data");
@@ -28,7 +29,15 @@ async function writeJsonMin(path: string, data: unknown): Promise<void> {
 }
 
 async function main() {
-  const feedOut = await fetchAllFeeds();
+  const versesPath = resolve(DATA_DIR, "verses.json");
+  const prevVerses = await readJsonIfExists<VersesPayload>(versesPath);
+  const [feedOut, verses] = await Promise.all([
+    fetchAllFeeds(),
+    fetchDailyVerses(prevVerses),
+  ]);
+  await writeJsonMin(versesPath, verses);
+  console.log(`Wrote verses.json — ${verses.verses.length} daily verse${verses.verses.length === 1 ? "" : "s"}.`);
+
   const allArticles = feedOut.articles;
   const allFeedStats = feedOut.feedStats;
   const churchYear = churchYearLine();

@@ -9,7 +9,9 @@ import { HoverCard as HoverCardContent, useHoverCard } from "./components/HoverC
 import { Headline } from "./components/Headline";
 import { ManageMutes } from "./components/ManageMutes";
 import { FeedHealth } from "./components/FeedHealth";
+import { DailyVerse } from "./components/DailyVerse";
 import { useHeadlines } from "./hooks/useHeadlines";
+import { useVerses, verseById } from "./hooks/useVerses";
 import { useTheme } from "./hooks/useTheme";
 import {
   useBookmarks,
@@ -57,6 +59,10 @@ function useLastVisit(loaded: boolean): number | null {
 
 export default function App() {
   const { headlines, brief, error, loadFull } = useHeadlines();
+  const verses = useVerses();
+  const odbVerse = verseById(verses, "our-daily-bread");
+  const bibleGatewayVerse = verseById(verses, "bible-gateway");
+  const youVersionVerse = verseById(verses, "youversion");
   const { theme, toggle: toggleTheme } = useTheme();
   const { bookmarks, toggle: toggleBookmark } = useBookmarks();
   const { queue, toggle: toggleQueue, remove: removeFromQueue } = useReadLater();
@@ -237,6 +243,7 @@ export default function App() {
         search={search}
         onSearchChange={setSearch}
         churchYearLine={headlines?.churchYear?.line}
+        featuredVerse={odbVerse}
       />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6">
@@ -281,6 +288,8 @@ export default function App() {
               <LeadStory article={lead} onHover={showHover} onHoverEnd={hideHover} />
             )}
             <LatestStrip articles={latestArticles} onHover={showHover} onHoverEnd={hideHover} />
+
+            <DailyVerse verse={bibleGatewayVerse} variant="pullquote" />
 
             {filteredCategories.length === 0 ? (
               <div className="opacity-60 text-center py-12">
@@ -353,7 +362,9 @@ export default function App() {
           />
         )}
 
-        <footer className="mt-12 pt-6 border-t border-current border-opacity-20 text-[11px] opacity-50 flex flex-wrap items-center justify-between gap-2">
+        <DailyVerse verse={youVersionVerse} variant="footer" />
+
+        <footer className="mt-8 pt-6 border-t border-current border-opacity-20 text-[11px] opacity-50 flex flex-wrap items-center justify-between gap-2">
           <span>
             The Jesus Report — faith-related headlines, refreshed hourly.{" "}
             <a href={`${import.meta.env.BASE_URL}feed.xml`} className="underline hover:opacity-100">

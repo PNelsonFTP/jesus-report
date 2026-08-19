@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "validate:feeds": "tsx scripts/validate-feeds.ts",
-    "test": "tsx --test scripts/lib/unwrapUrl.test.ts scripts/lib/router.test.ts scripts/lib/churchYear.test.ts"
+    "test": "tsx --test scripts/lib/unwrapUrl.test.ts scripts/lib/router.test.ts scripts/lib/churchYear.test.ts scripts/lib/verseParse.test.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

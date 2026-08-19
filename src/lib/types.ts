@@ -76,3 +76,21 @@ export interface Brief {
   bullets: string[];
   citedArticles: { title: string; url: string; source: string }[];
 }
+
+export type VerseSourceId = "our-daily-bread" | "bible-gateway" | "youversion";
+
+export interface DailyVerse {
+  id: VerseSourceId;
+  source: string;
+  text: string;
+  reference: string;
+  url: string;
+  version?: string | null;
+  title?: string | null;
+  fetchedAt: string;
+}
+
+export interface VersesPayload {
+  generatedAt: string;
+  verses: DailyVerse[];
+}
