@@ -33,8 +33,8 @@ function fallback(articles: Article[], ctx: BriefContext | undefined): Brief {
   };
 
   const mixOrder = [
-    "scripture", "church", "world", "missions", "inspiration",
-    "theology", "public_life", "family", "culture",
+    "scripture", "inspiration", "church", "family", "theology",
+    "podcasts", "missions", "culture",
   ];
   if (ctx?.categories) {
     for (const id of mixOrder) {

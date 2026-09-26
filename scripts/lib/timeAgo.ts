@@ -47,7 +47,8 @@ function parseRfc822(raw: string): string | null {
 
 function parseIso(raw: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}/.test(raw)) return null;
-  const d = new Date(raw);
+  const normalized = raw.replace(/^(\d{4}-\d{2}-\d{2})[ ](\d{2}:\d{2}:\d{2})/, "$1T$2");
+  const d = new Date(normalized);
   return isNaN(d.getTime()) ? null : toIso(d);
 }
 

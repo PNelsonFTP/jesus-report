@@ -58,6 +58,20 @@ export const SOURCES: FeedSource[] = [
   { name: "Desiring God", url: "https://feeds.feedburner.com/DesiringGod", category: "scripture", priority: "high" },
   { name: "Ligonier", url: "https://www.ligonier.org/posts/rss.xml", category: "scripture", priority: "high" },
   { name: "Tabletalk", url: "https://tabletalkmagazine.com/feed/", category: "scripture", priority: "high" },
+  { name: "Truth For Life", url: "https://feeds.feedburner.com/TruthForLife", category: "scripture", priority: "high" },
+  { name: "Back to the Bible", url: "https://www.backtothebible.org/blog-feed.xml", category: "scripture", priority: "high" },
+  { name: "Crossway", url: "https://www.crossway.org/articles/rss/", category: "scripture", priority: "medium" },
+  { name: "Gentle Reformation", url: "https://gentlereformation.com/feed/", category: "scripture", priority: "high" },
+  { name: "TGC Read the Bible", url: "https://www.thegospelcoalition.org/devotionals/read-the-bible/feed/?feed=podcast_rtb", category: "scripture", priority: "high" },
+  { name: "The Bible Recap", url: "https://feed.podbean.com/thebiblerecap/feed.xml", category: "scripture", priority: "high" },
+  { name: "Daily Audio Bible", url: "http://feeds.feedburner.com/dailyaudiobible", category: "scripture", priority: "medium" },
+  { name: "Enduring Word", url: "https://enduringword.com/podcasts/feed/", category: "scripture", priority: "high" },
+  { name: "Grace to You Readings", url: "https://feeds.gty.org/gtydailyreadingsone&x=1", category: "scripture", priority: "high" },
+  { name: "Bible in One Year", url: "https://content.bioy.app/rss/podcast?limit=365&locale=en&variant=classic", category: "scripture", priority: "high" },
+  { name: "843 Acres", url: "https://theparkforum.org/category/843-acres/feed/", category: "scripture", priority: "high" },
+  { name: "Bible Pathway", url: "https://www.crosswalk.com/devotionals/biblepathways/rss.xml", category: "scripture", priority: "medium" },
+  { name: "Quiet Walk", url: "https://www.crosswalk.com/devotionals/quiet-walk/rss.xml", category: "scripture", priority: "medium" },
+  { name: "Fighter Verses", url: "https://www.fighterverses.com/blog-feed.xml", category: "scripture", priority: "medium" },
 
   // ---------- church ----------
   { name: "The Gospel Coalition", url: "https://www.thegospelcoalition.org/feed/", category: "church", priority: "critical" },
@@ -82,9 +96,31 @@ export const SOURCES: FeedSource[] = [
   { name: "World Vision", url: "https://www.worldvision.org/feed", category: "missions", priority: "medium" },
 
   // ---------- inspiration ----------
-  { name: "He Reads Truth", url: "https://hereadstruth.com/feed/", category: "inspiration", priority: "medium" },
+  { name: "Our Daily Bread", url: "https://odb.org/feed/", category: "inspiration", priority: "critical" },
+  { name: "Harvest Ministries", url: "https://harvest.org/resources/devotion/feed/", category: "inspiration", priority: "high" },
+  { name: "Scotty Smith", url: "https://www.thegospelcoalition.org/blogs/scotty-smith/feed/", category: "inspiration", priority: "high" },
+  { name: "Joni and Friends", url: "https://www.joniandfriends.org/feed/", category: "inspiration", priority: "high" },
+  { name: "Insight for Living", url: "https://insight.org/feed/RSSDevoApp", category: "inspiration", priority: "high" },
+  { name: "Solid Joys", url: "https://feed.desiringgod.org/solid-joys-audio.rss", category: "inspiration", priority: "high" },
+  { name: "Drawing Near", url: "https://feeds.gty.org/gtydrawingnear&x=1", category: "inspiration", priority: "high" },
+  { name: "Truth For Life Devotional", url: "https://feeds.feedburner.com/truthforlife/alistairbeggdevotionalpodcast", category: "inspiration", priority: "high" },
+  { name: "Things Unseen", url: "https://rss.libsyn.com/shows/449418/destinations/3771729.xml", category: "inspiration", priority: "high" },
+  { name: "Today in the Word", url: "https://www.omnycontent.com/d/playlist/a8cdbf10-d816-4c77-9e79-aa1c012547e1/e16b938e-d652-4fa8-b1d9-ace601786fac/c6f332f4-1e26-475d-b662-ace601786fbe/podcast.rss", category: "inspiration", priority: "high" },
+  { name: "In Touch", url: "https://www.omnycontent.com/d/playlist/7237c071-cd56-4495-998a-b23d00f69e8d/87d53d0c-9dc6-4151-b94e-b26701575b7f/20bba2fb-121b-493a-b694-b26701575b98/podcast.rss", category: "inspiration", priority: "high" },
+  { name: "Pray the Word", url: "https://rss.buzzsprout.com/112848.rss", category: "inspiration", priority: "medium" },
+  { name: "Heartlight", url: "https://feeds.feedburner.com/hl-devos-votd", category: "inspiration", priority: "high" },
+  { name: "First15", url: "https://www.first15.org/devotionals/feed.rss", category: "inspiration", priority: "high" },
+  { name: "Today", url: "https://todaydevotional.com/feed/", category: "inspiration", priority: "high" },
+  { name: "Open the Bible", url: "https://openthebible.org/open-the-bible-daily/feed/", category: "inspiration", priority: "high" },
+  { name: "Encouragement for Today", url: "https://www.crosswalk.com/devotionals/encouragement/rss.xml", category: "inspiration", priority: "high" },
+  { name: "Morning and Evening", url: "https://www.crosswalk.com/devotionals/morningandevening/rss.xml", category: "inspiration", priority: "medium" },
+  { name: "Your Daily Prayer", url: "https://www.crosswalk.com/devotionals/your-daily-prayer/rss.xml", category: "inspiration", priority: "medium" },
+  { name: "Time of Grace", url: "https://timeofgrace.org/feed/", category: "inspiration", priority: "medium" },
+  { name: "Revive Our Hearts", url: "https://cdn.reviveourhearts.com/podcasts/itunes/revive-our-hearts.rss", category: "inspiration", priority: "medium" },
+  { name: "He Reads Truth", url: "https://hereadstruth.com/feed/", category: "inspiration", priority: "high" },
+  { name: "She Reads Truth", url: "https://shereadstruth.com/feed/", category: "inspiration", priority: "high" },
+  { name: "Ann Voskamp", url: "https://annvoskamp.com/feed/", category: "inspiration", priority: "medium" },
   { name: "Challies", url: "https://www.challies.com/feed/", category: "inspiration", priority: "medium" },
-  { name: "She Reads Truth", url: "https://shereadstruth.com/feed/", category: "inspiration", priority: "medium" },
 
   // ---------- culture ----------
   { name: "Comment Magazine", url: "https://comment.org/feed/", category: "culture", priority: "high" },
@@ -100,8 +136,8 @@ export const SOURCES: FeedSource[] = [
   { name: "Canopy Forum", url: "https://canopyforum.org/feed/", category: "public_life", priority: "low" },
 
   // ---------- world ----------
-  { name: "ICC Persecution", url: "https://persecution.org/feed/", category: "world", priority: "high" },
-  { name: "Open Doors", url: "https://www.opendoors.org.au/feed/", category: "world", priority: "high" },
+  { name: "ICC Persecution", url: "https://persecution.org/feed/", category: "world", priority: "medium" },
+  { name: "Open Doors", url: "https://www.opendoors.org.au/feed/", category: "world", priority: "medium" },
   { name: "Orthodox Times", url: "https://orthodoxtimes.com/feed/", category: "world", priority: "medium" },
 
   // ---------- theology ----------
@@ -109,15 +145,19 @@ export const SOURCES: FeedSource[] = [
   { name: "Mere Orthodoxy", url: "https://mereorthodoxy.com/rss/", category: "theology", priority: "high" },
   { name: "Public Orthodoxy", url: "https://publicorthodoxy.org/feed/", category: "theology", priority: "medium" },
   { name: "Reformation 21", url: "https://reformation21.org/feed/", category: "theology", priority: "medium" },
+  { name: "Place for Truth", url: "https://www.placefortruth.org/feed", category: "theology", priority: "medium" },
+  { name: "Westminster Shorter Catechism", url: "https://rss.libsyn.com/shows/260072/destinations/1973036.xml", category: "theology", priority: "medium" },
 
   // ---------- family ----------
   { name: "Focus on the Family", url: "https://www.focusonthefamily.com/feed/", category: "family", priority: "medium" },
+  { name: "Club 31 Women", url: "https://club31women.com/feed/", category: "family", priority: "medium" },
 
   // ---------- music_arts ----------
   { name: "CCM Magazine", url: "https://www.ccmmagazine.com/feed/", category: "music_arts", priority: "medium" },
 
   // ---------- podcasts ----------
   { name: "TGC Podcast", url: "https://www.thegospelcoalition.org/podcasts/tgc-podcast/feed/", category: "podcasts", priority: "high" },
+  { name: "Ask Pastor John", url: "https://feeds.feedburner.com/AskPastorJohn", category: "podcasts", priority: "high" },
   { name: "The Briefing", url: "https://albertmohler.com/feed/", category: "podcasts", priority: "medium" },
 ];
 
@@ -161,17 +201,17 @@ export interface CategoryMeta {
 }
 
 export const CATEGORIES: CategoryMeta[] = [
-  { id: "scripture",    label: "SCRIPTURE & STUDY",      short: "SCRIPTURE" },
-  { id: "church",       label: "CHURCH & MINISTRY",      short: "CHURCH" },
+  { id: "scripture",    label: "BIBLE READING & STUDY",  short: "SCRIPTURE" },
+  { id: "inspiration",  label: "DEVOTION & ENCOURAGEMENT", short: "DEVOTION" },
+  { id: "church",       label: "FAITH & COMMUNITY",      short: "COMMUNITY" },
+  { id: "family",       label: "FAMILY & LIFE",          short: "FAMILY" },
+  { id: "theology",     label: "THEOLOGY & APOLOGETICS", short: "THEOLOGY" },
+  { id: "podcasts",     label: "TALKS & PODCASTS",       short: "TALKS" },
   { id: "missions",     label: "MISSIONS & SERVICE",     short: "MISSIONS" },
-  { id: "inspiration",  label: "INSPIRATION",            short: "INSPIRE" },
   { id: "culture",      label: "FAITH & CULTURE",        short: "CULTURE" },
+  { id: "music_arts",   label: "WORSHIP & ARTS",         short: "ARTS" },
   { id: "public_life",  label: "PUBLIC LIFE",            short: "PUBLIC" },
   { id: "world",        label: "WORLD & PERSECUTION",    short: "WORLD" },
-  { id: "theology",     label: "THEOLOGY & APOLOGETICS", short: "THEOLOGY" },
-  { id: "family",       label: "FAMILY & LIFE",          short: "FAMILY" },
-  { id: "music_arts",   label: "WORSHIP & ARTS",         short: "ARTS" },
-  { id: "podcasts",     label: "TALKS & PODCASTS",       short: "TALKS" },
 ];
 
 export const PRIORITY_WEIGHT: Record<Priority, number> = {

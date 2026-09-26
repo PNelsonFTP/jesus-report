@@ -95,11 +95,10 @@ function sameStory(a: string, b: string): boolean {
   return shared >= 2;
 }
 
-const LEAD_CATEGORIES = new Set<CategoryId>(["scripture", "church", "missions", "world"]);
+const LEAD_CATEGORIES = new Set<CategoryId>(["scripture", "inspiration"]);
 const LEAD_BONUS: Partial<Record<CategoryId, number>> = {
-  church: 12,
-  missions: 12,
-  world: 18,
+  scripture: 8,
+  inspiration: 12,
 };
 
 function titleWordCount(title: string): number {
@@ -258,7 +257,12 @@ export function buildCategories(articles: Article[]): BuildCategoriesResult {
       const score = scoreByTitle.get(g.title) ?? 0;
       const ageH = ageHours(g.publishedAt, now);
 
-      if (LEAD_CATEGORIES.has(meta.id) && ageH <= 72 && titleWordCount(g.title) >= 6) {
+      if (
+        LEAD_CATEGORIES.has(meta.id) &&
+        ageH <= 72 &&
+        titleWordCount(g.title) >= 6 &&
+        !isPersecutionStory(g.title, g.summary)
+      ) {
         const leadScore = score + (LEAD_BONUS[meta.id] ?? 0);
         leadPool.push({ article: g, score: leadScore });
         if (!leadCandidate || leadScore > leadCandidate.score) {
@@ -310,6 +314,7 @@ export function buildCategories(articles: Article[]): BuildCategoriesResult {
   if (trending.length < TRENDING_MIN) {
     trending = withLead.filter((s) => s.clusterAgeH <= TRENDING_RELAXED_H);
   }
+  trending = trending.filter((s) => !isPersecutionStory(s.lead.title, s.lead.summary));
   trending.sort((a, b) => {
     if (b.sources.size !== a.sources.size) return b.sources.size - a.sources.size;
     return b.maxScore - a.maxScore;

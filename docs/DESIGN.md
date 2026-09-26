@@ -95,9 +95,8 @@ critical one.
 5. Trending: ≥2 outlets, looser title match, under 72h (relax to 120h).
    If nothing clusters, the row shows up to 4 top stories from Scripture,
    church, missions, and persecution instead of sitting empty.
-6. Lead story: highest score under 72h in Scripture, church, missions, or
-   persecution, with a bonus for church, missions, and persecution. Titles
-   shorter than six words are skipped.
+6. Lead story: highest score under 72h in Bible reading or devotion.
+   Persecution stories stay in World & Persecution and do not lead the page.
 
 ### 3.5 Age windows
 
@@ -168,17 +167,17 @@ Returning visits with a full session cache skip the preview.
 
 | id | Label |
 |----|--------|
-| `scripture` | SCRIPTURE & STUDY |
-| `church` | CHURCH & MINISTRY |
+| `scripture` | BIBLE READING & STUDY |
+| `inspiration` | DEVOTION & ENCOURAGEMENT |
+| `church` | FAITH & COMMUNITY |
+| `family` | FAMILY & LIFE |
+| `theology` | THEOLOGY & APOLOGETICS |
+| `podcasts` | TALKS & PODCASTS |
 | `missions` | MISSIONS & SERVICE |
-| `inspiration` | INSPIRATION |
 | `culture` | FAITH & CULTURE |
+| `music_arts` | WORSHIP & ARTS |
 | `public_life` | PUBLIC LIFE |
 | `world` | WORLD & PERSECUTION |
-| `theology` | THEOLOGY & APOLOGETICS |
-| `family` | FAMILY & LIFE |
-| `music_arts` | WORSHIP & ARTS |
-| `podcasts` | TALKS & PODCASTS |
 
 Sections with fewer than 4 stories are hidden until they fill.
 Hopeful News (secular wires) is not on the homepage. See the comment

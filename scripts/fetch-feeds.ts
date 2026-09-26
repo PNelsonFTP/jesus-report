@@ -205,6 +205,13 @@ function linkFromItem(item: ParsedItem): string | null {
   if (typeof (item as { id?: unknown }).id === "string" && /^https?:\/\//.test((item as { id: string }).id)) {
     return (item as { id: string }).id;
   }
+  const guid = firstStr((item as { guid?: unknown }).guid);
+  if (guid && /^https?:\/\//.test(guid)) return guid;
+  const enclosure = (item as { enclosure?: unknown }).enclosure;
+  if (enclosure && typeof enclosure === "object" && "@_url" in enclosure) {
+    const url = String((enclosure as { "@_url": string })["@_url"]);
+    if (/^https?:\/\//.test(url)) return url;
+  }
   return null;
 }
 
