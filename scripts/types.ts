@@ -2,6 +2,8 @@
 
 import type { CategoryId, Priority } from "./sources";
 
+export type { CategoryId, Priority };
+
 export interface Article {
   id: string;
   title: string;
@@ -24,6 +26,14 @@ export interface TrendingStory {
   sources: string[];
   sourceCount: number;
   categoryIds: string[];
+  kind?: "multi" | "top";
+}
+
+export interface FeedStat {
+  source: string;
+  ok: boolean;
+  count: number;
+  priority?: Priority;
 }
 
 export interface CategoryBucket {
@@ -45,7 +55,7 @@ export interface HeadlinesPayload {
   totalCount: number;
   trending: TrendingStory[];
   categories: CategoryBucket[];
-  feedStats: { source: string; ok: boolean; count: number }[];
+  feedStats: FeedStat[];
   leadUrl?: string | null;
   churchYear?: ChurchYear;
   partial?: boolean;

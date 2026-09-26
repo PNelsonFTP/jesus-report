@@ -8,6 +8,7 @@ import { generateBrief } from "./generate-brief";
 import { buildCategories } from "./lib/router";
 import { buildSiteFeed } from "./lib/emitFeed";
 import { churchYearLine } from "./lib/churchYear";
+import { isCatholicChurchNews } from "./lib/editorial";
 import type { HeadlinesPayload, VersesPayload } from "./types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -58,7 +59,13 @@ async function main() {
     process.exit(0);
   }
 
-  const { buckets: categories, trending, leadUrl } = buildCategories(allArticles);
+  const stories = allArticles.filter((a) => !isCatholicChurchNews(a.title, a.summary));
+  const dropped = allArticles.length - stories.length;
+  if (dropped > 0) {
+    console.log(`Dropped ${dropped} Pope, Vatican, or Catholic-institution headlines.`);
+  }
+
+  const { buckets: categories, trending, leadUrl } = buildCategories(stories);
 
   const payload: HeadlinesPayload = {
     generatedAt: new Date().toISOString(),
@@ -91,7 +98,7 @@ async function main() {
   await writeFile(resolve(PUBLIC_DIR, "feed.xml"), siteFeed);
   console.log("Wrote feed.xml");
 
-  const brief = await generateBrief(allArticles, { trending, categories });
+  const brief = await generateBrief(stories, { trending, categories, leadUrl });
   await writeJsonMin(resolve(DATA_DIR, "brief.json"), brief);
   console.log(`Wrote brief.json — source: ${brief.source}, ${brief.bullets.length} bullets.`);
 

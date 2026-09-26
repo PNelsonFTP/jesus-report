@@ -1,5 +1,6 @@
 import type { Article, CategoryBucket, GroupedArticle, TrendingStory } from "../types";
 import { AGE_WINDOWS, CATEGORIES, KEYWORDS, type CategoryId } from "../sources";
+import { isPersecutionStory, PERSECUTION_SOURCES } from "./editorial";
 import { ageHours, finalScore, type ScoreCtx } from "./score";
 import { groupStories } from "./groupStories";
 
@@ -54,14 +55,55 @@ function routesFor(article: Article): Set<CategoryId> {
   if (KEYWORD_AGNOSTIC_SOURCES.has(article.source)) return cats;
   const hay = `${article.title} ${article.summary ?? ""}`.toLowerCase();
   for (const rule of KEYWORDS) {
+    if (rule.routeTo === article.category) continue;
     for (const kw of rule.match) {
       if (hay.includes(kw)) {
         cats.add(rule.routeTo);
-        break;
+        return cats;
       }
     }
   }
   return cats;
+}
+
+function allowedInCategory(article: Article, categoryId: CategoryId): boolean {
+  if (categoryId !== "world") return true;
+  if (PERSECUTION_SOURCES.has(article.source)) return true;
+  return isPersecutionStory(article.title, article.summary);
+}
+
+function capPerSource<T extends { source: string }>(items: T[], limit: number, maxPerSource: number): T[] {
+  const out: T[] = [];
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const n = counts.get(item.source) ?? 0;
+    if (n >= maxPerSource) continue;
+    counts.set(item.source, n + 1);
+    out.push(item);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function sameStory(a: string, b: string): boolean {
+  const ta = titleTokens(a);
+  const tb = titleTokens(b);
+  if (ta.size < 3 || tb.size < 3) return false;
+  if (jaccard(ta, tb) >= 0.34) return true;
+  let shared = 0;
+  for (const t of ta) if (t.length > 4 && tb.has(t)) shared++;
+  return shared >= 2;
+}
+
+const LEAD_CATEGORIES = new Set<CategoryId>(["scripture", "church", "missions", "world"]);
+const LEAD_BONUS: Partial<Record<CategoryId, number>> = {
+  church: 12,
+  missions: 12,
+  world: 18,
+};
+
+function titleWordCount(title: string): number {
+  return title.trim().split(/\s+/).filter(Boolean).length;
 }
 
 const STOPWORDS = new Set([
@@ -70,6 +112,7 @@ const STOPWORDS = new Set([
   "says","said","will","has","have","had","new","via","after","over","into",
   "you","your","i","we","our","they","their","he","she","his","her",
   "church","christian","god","jesus",
+  "january","february","march","april","june","july","august","september","october","november","december",
 ]);
 function titleTokens(title: string): Set<string> {
   return new Set(
@@ -163,12 +206,14 @@ export function buildCategories(articles: Article[]): BuildCategoriesResult {
   }>();
 
   let leadCandidate: { url: string; score: number } | null = null;
+  const leadPool: { article: GroupedArticle; score: number }[] = [];
 
   for (const meta of CATEGORIES) {
     const window = AGE_WINDOWS[meta.id];
     const inCat: ScoredArticle[] = [];
     for (const { article, cats } of routed) {
       if (!cats.has(meta.id)) continue;
+      if (!allowedInCategory(article, meta.id)) continue;
       const ageH = ageHours(article.publishedAt, now);
       if (ageH > window.hardDays * 24) continue;
       const ctx: ScoreCtx = {
@@ -191,36 +236,40 @@ export function buildCategories(articles: Article[]): BuildCategoriesResult {
     grouped.sort((a, b) => (scoreByTitle.get(b.title) ?? 0) - (scoreByTitle.get(a.title) ?? 0));
 
     const distinctSources = new Set(grouped.map((g) => g.source)).size;
-    const maxPerSource = distinctSources <= 2 ? 5 : distinctSources <= 4 ? 4 : 3;
     const withScore = grouped.map((g) => ({
       article: g,
       score: scoreByTitle.get(g.title) ?? 0,
     }));
-    const diversified = enforceDiversity(withScore, withScore.length, maxPerSource);
+    const diversified = enforceDiversity(withScore, withScore.length, 2);
     const ordered = diversified.map((d) => d.article);
+    const articles = capPerSource(ordered, 10, 2);
+    const articlesAll = capPerSource(ordered, 20, 3);
 
     buckets.push({
       id: meta.id,
       label: meta.label,
-      articles: ordered.slice(0, 10),
-      articlesAll: ordered.slice(0, 20),
+      articles,
+      articlesAll,
       sourceCount: distinctSources,
     });
 
-    for (const g of ordered.slice(0, 20)) {
+    for (const g of articlesAll) {
       const allSources = new Set<string>([g.source, ...g.related.map((r) => r.source)]);
       const score = scoreByTitle.get(g.title) ?? 0;
       const ageH = ageHours(g.publishedAt, now);
 
-      if (ageH <= 72 && (!leadCandidate || score > leadCandidate.score)) {
-        leadCandidate = { url: g.url, score };
+      if (LEAD_CATEGORIES.has(meta.id) && ageH <= 72 && titleWordCount(g.title) >= 6) {
+        const leadScore = score + (LEAD_BONUS[meta.id] ?? 0);
+        leadPool.push({ article: g, score: leadScore });
+        if (!leadCandidate || leadScore > leadCandidate.score) {
+          leadCandidate = { url: g.url, score: leadScore };
+        }
       }
 
       let existing = storyCoverage.get(g.url);
       if (!existing) {
-        const gTok = titleTokens(g.title);
         for (const [, ev] of storyCoverage) {
-          if (jaccard(gTok, titleTokens(ev.title)) >= 0.4) {
+          if (sameStory(g.title, ev.title)) {
             existing = ev;
             break;
           }
@@ -265,12 +314,34 @@ export function buildCategories(articles: Article[]): BuildCategoriesResult {
     if (b.sources.size !== a.sources.size) return b.sources.size - a.sources.size;
     return b.maxScore - a.maxScore;
   });
-  const trendingOut: TrendingStory[] = trending.slice(0, 12).map((s) => ({
+  let trendingOut: TrendingStory[] = trending.slice(0, 12).map((s) => ({
     lead: s.lead,
     sources: [...s.sources],
     sourceCount: s.sources.size,
     categoryIds: [...s.categories],
+    kind: "multi" as const,
   }));
+
+  if (trendingOut.length === 0) {
+    const seen = new Set<string>();
+    const top: TrendingStory[] = [];
+    const ranked = [...leadPool].sort((a, b) => b.score - a.score);
+    for (const item of ranked) {
+      if (leadCandidate && item.article.url === leadCandidate.url) continue;
+      if (seen.has(item.article.url) || seen.has(item.article.source)) continue;
+      seen.add(item.article.url);
+      seen.add(item.article.source);
+      top.push({
+        lead: item.article,
+        sources: [item.article.source],
+        sourceCount: 1,
+        categoryIds: [item.article.category],
+        kind: "top",
+      });
+      if (top.length >= 4) break;
+    }
+    trendingOut = top;
+  }
 
   return { buckets, trending: trendingOut, leadUrl: leadCandidate?.url ?? null };
 }

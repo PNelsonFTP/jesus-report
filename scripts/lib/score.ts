@@ -43,23 +43,10 @@ const IMPORTANCE_FAITH = [
   "scripture", "church plant", "seminary", "ordination", "baptism",
 ];
 const IMPORTANCE_EVENT = [
-  "archbishop", "bishop", "pastor", "congregation",
-  "religious liberty", "first amendment", "holy land", "jerusalem",
+  "pastor", "congregation",
+  "religious liberty", "first amendment",
 ];
 
-// Soften Catholic-institution feeds without dropping them. Recency still
-// lets a major Vatican story surface; it just will not outrank a same-age
-// TGC / CT / RNS item on priority + keyword hits alone.
-const CATHOLIC_SOURCE_DAMPEN = new Set([
-  "Vatican News",
-  "Catholic News Agency",
-  "America Magazine",
-  "The Pillar",
-  "OSV News",
-  "Crux",
-  "Aleteia",
-]);
-const CATHOLIC_SOURCE_PENALTY = 10;
 const IMPORTANCE_SERVICE = [
   "church plant", "relief", "refugee", "adoption", "prison ministry",
   "homeless", "unreached",
@@ -91,8 +78,7 @@ export function finalScore(article: Article, ctx: ScoreCtx): number {
   const r = recencyScore(article.publishedAt, ctx.now);
   const i = importanceScore(article.title, article.summary, ageH);
   const home = ctx.isHomeCategory ? 6 : 0;
-  const dampen = CATHOLIC_SOURCE_DAMPEN.has(article.source) ? CATHOLIC_SOURCE_PENALTY : 0;
-  return p + r + i + home - dampen;
+  return p + r + i + home;
 }
 
 export function ageDays(publishedAt: string | null, now: Date): number {

@@ -20,7 +20,15 @@
 //     survive the public_life window), CBN rss.xml (3 undated items),
 //     Positive News (two hopeful feeds is enough), ACNA / OCL (newest
 //     outside the church 5-day hard window)
-//   Open Doors US: HTTP 429 on probe — retry later, do not pad.
+//   Open Doors US: HTTP 429 on probe — Open Doors Australia is the live feed.
+//
+// Removed on purpose (do not re-add):
+//   Catholic-institution wires: Vatican News, Catholic News Agency, America
+//     Magazine, The Pillar, OSV News, Crux, Aleteia. Pope / Vatican /
+//     Catholic-church headlines from every other wire are dropped in
+//     scripts/lib/editorial.ts.
+//   Secular hopeful fillers: Good News Network, Reasons to be Cheerful.
+//   Empty RSS shells (HTTP 200, zero items): Baptist Press, NAMB, Send Relief, ERLC.
 
 export type CategoryId =
   | "scripture"
@@ -54,15 +62,11 @@ export const SOURCES: FeedSource[] = [
   // ---------- church ----------
   { name: "The Gospel Coalition", url: "https://www.thegospelcoalition.org/feed/", category: "church", priority: "critical" },
   { name: "Christianity Today", url: "https://www.christianitytoday.com/feed/", category: "church", priority: "critical" },
-  // Catholic outlets stay on the homepage; medium/low so they do not
-  // dominate lead / church / world ahead of evangelical and mainline feeds.
-  { name: "Catholic News Agency", url: "https://www.ewtnnews.com/rss", category: "church", priority: "medium" },
-  { name: "America Magazine", url: "https://www.americamagazine.org/feed", category: "church", priority: "medium" },
-  { name: "The Pillar", url: "https://www.pillarcatholic.com/feed", category: "church", priority: "medium" },
-  { name: "OSV News", url: "https://www.osvnews.com/feed/", category: "church", priority: "medium" },
   { name: "Christian Post", url: "https://www.christianpost.com/rss/", category: "church", priority: "high" },
+  { name: "Baptist Standard", url: "https://baptiststandard.com/feed/", category: "church", priority: "high" },
+  { name: "AG News", url: "https://news.ag.org/rss", category: "church", priority: "medium" },
+  { name: "Evangelical Times", url: "https://www.evangelical-times.org/rss/", category: "church", priority: "medium" },
   { name: "9Marks", url: "https://www.9marks.org/feed/", category: "church", priority: "high" },
-  { name: "Crux", url: "https://wp.cruxnow.com/feed/", category: "church", priority: "medium" },
   { name: "Anglican Ink", url: "https://anglican.ink/feed/", category: "church", priority: "medium" },
   { name: "Episcopal News Service", url: "https://episcopalnewsservice.org/feed/", category: "church", priority: "medium" },
   { name: "Presbyterian Outlook", url: "https://pres-outlook.org/feed/", category: "church", priority: "medium" },
@@ -73,12 +77,13 @@ export const SOURCES: FeedSource[] = [
 
   // ---------- missions ----------
   { name: "IMB", url: "https://www.imb.org/feed/", category: "missions", priority: "high" },
+  { name: "Wycliffe", url: "https://wycliffe.net/feed/", category: "missions", priority: "medium" },
   { name: "Samaritan's Purse", url: "https://www.samaritanspurse.org/feed/", category: "missions", priority: "medium" },
   { name: "World Vision", url: "https://www.worldvision.org/feed", category: "missions", priority: "medium" },
 
   // ---------- inspiration ----------
-  { name: "Aleteia", url: "https://aleteia.org/feed/", category: "inspiration", priority: "low" },
   { name: "He Reads Truth", url: "https://hereadstruth.com/feed/", category: "inspiration", priority: "medium" },
+  { name: "Challies", url: "https://www.challies.com/feed/", category: "inspiration", priority: "medium" },
   { name: "She Reads Truth", url: "https://shereadstruth.com/feed/", category: "inspiration", priority: "medium" },
 
   // ---------- culture ----------
@@ -89,13 +94,14 @@ export const SOURCES: FeedSource[] = [
 
   // ---------- public_life ----------
   { name: "Religion News Service", url: "https://religionnews.com/feed/", category: "public_life", priority: "critical" },
+  { name: "Christian Concern", url: "https://christianconcern.com/feed/", category: "public_life", priority: "medium" },
   { name: "WORLD", url: "https://wng.org/feeds/rss/magazine.rss", category: "public_life", priority: "high" },
   { name: "Public Discourse", url: "https://www.thepublicdiscourse.com/feed/", category: "public_life", priority: "medium" },
   { name: "Canopy Forum", url: "https://canopyforum.org/feed/", category: "public_life", priority: "low" },
 
   // ---------- world ----------
-  { name: "Vatican News", url: "https://www.vaticannews.va/en.rss.xml", category: "world", priority: "medium" },
   { name: "ICC Persecution", url: "https://persecution.org/feed/", category: "world", priority: "high" },
+  { name: "Open Doors", url: "https://www.opendoors.org.au/feed/", category: "world", priority: "high" },
   { name: "Orthodox Times", url: "https://orthodoxtimes.com/feed/", category: "world", priority: "medium" },
 
   // ---------- theology ----------
@@ -109,10 +115,6 @@ export const SOURCES: FeedSource[] = [
 
   // ---------- music_arts ----------
   { name: "CCM Magazine", url: "https://www.ccmmagazine.com/feed/", category: "music_arts", priority: "medium" },
-
-  // ---------- positive ----------
-  { name: "Good News Network", url: "https://www.goodnewsnetwork.org/feed/", category: "positive", priority: "low" },
-  { name: "Reasons to be Cheerful", url: "https://reasonstobecheerful.world/feed/", category: "positive", priority: "low" },
 
   // ---------- podcasts ----------
   { name: "TGC Podcast", url: "https://www.thegospelcoalition.org/podcasts/tgc-podcast/feed/", category: "podcasts", priority: "high" },
@@ -141,15 +143,14 @@ export const AGE_WINDOWS: Record<CategoryId, AgeWindow> = {
 };
 
 export const KEYWORDS: { match: string[]; routeTo: CategoryId }[] = [
-  { match: ["bible study", "scripture", "exegesis", "commentary", "lectionary", "original language", "hebrew", "greek testament", "reading plan"], routeTo: "scripture" },
-  { match: ["church plant", "pastor", "congregation", "denomination", "worship service", "ordination", "synod", "sbc ", "vatican", "diocese"], routeTo: "church" },
-  { match: ["missionary", "missions", "unreached", "relief", "refugee", "prison ministry", "homeless", "adoption", "bible translation"], routeTo: "missions" },
-  { match: ["devotional", "testimony", "encouragement", "hope in", "good news"], routeTo: "inspiration" },
-  { match: ["film", "novel", "poetry", "literature", "education", "university", "art exhibit"], routeTo: "culture" },
-  { match: ["religious liberty", "first amendment", "church and state", "supreme court", "religious freedom"], routeTo: "public_life" },
-  { match: ["persecution", "martyr", "holy land", "jerusalem", "nigeria church", "north korea"], routeTo: "world" },
-  { match: ["theology", "apologetics", "doctrine", "creed", "reformation", "encyclical"], routeTo: "theology" },
-  { match: ["marriage", "parenting", "pro-life", "abortion", "caregiving", "family"], routeTo: "family" },
+  { match: ["bible study", "exegesis", "commentary", "lectionary", "reading plan", "greek testament"], routeTo: "scripture" },
+  { match: ["church plant", "ordination", "sbc "], routeTo: "church" },
+  { match: ["missionary", "missionaries", "unreached", "bible translation"], routeTo: "missions" },
+  { match: ["devotional", "testimony"], routeTo: "inspiration" },
+  { match: ["religious liberty", "religious freedom", "first amendment"], routeTo: "public_life" },
+  { match: ["persecution", "persecuted", "martyr", "massacre"], routeTo: "world" },
+  { match: ["apologetics", "doctrine"], routeTo: "theology" },
+  { match: ["parenting", "pro-life", "abortion"], routeTo: "family" },
   { match: ["worship music", "hymn", "liturgy", "sacred music", "choir"], routeTo: "music_arts" },
 ];
 
@@ -170,7 +171,6 @@ export const CATEGORIES: CategoryMeta[] = [
   { id: "theology",     label: "THEOLOGY & APOLOGETICS", short: "THEOLOGY" },
   { id: "family",       label: "FAMILY & LIFE",          short: "FAMILY" },
   { id: "music_arts",   label: "WORSHIP & ARTS",         short: "ARTS" },
-  { id: "positive",     label: "HOPEFUL NEWS",           short: "HOPE" },
   { id: "podcasts",     label: "TALKS & PODCASTS",       short: "TALKS" },
 ];
 

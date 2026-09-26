@@ -20,7 +20,7 @@ export function LeadStory({ article, onHover, onHoverEnd }: LeadStoryProps) {
         rel="noreferrer noopener"
         className="lead-title headline-critical inline-block"
       >
-        {article.title.toUpperCase()}
+        {article.title}
       </a>
       <div className="flex items-center justify-center gap-3 mt-2 text-[11px] uppercase tracking-widest opacity-70">
         <span className="source-badge">{article.source}</span>

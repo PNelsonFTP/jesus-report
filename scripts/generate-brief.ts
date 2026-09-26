@@ -4,6 +4,7 @@ import { PRIORITY_WEIGHT } from "./sources";
 export interface BriefContext {
   trending: TrendingStory[];
   categories: CategoryBucket[];
+  leadUrl?: string | null;
 }
 
 function pickTop(articles: Article[], n: number): Article[] {
@@ -21,6 +22,7 @@ function pickTop(articles: Article[], n: number): Article[] {
 function fallback(articles: Article[], ctx: BriefContext | undefined): Brief {
   const cited: { title: string; url: string; source: string }[] = [];
   const seenUrls = new Set<string>();
+  if (ctx?.leadUrl) seenUrls.add(ctx.leadUrl);
 
   const add = (a: Article | TrendingStory["lead"]) => {
     if (seenUrls.has(a.url)) return;
@@ -30,28 +32,29 @@ function fallback(articles: Article[], ctx: BriefContext | undefined): Brief {
     cited.push({ title: a.title, url: a.url, source: a.source });
   };
 
-  if (ctx?.trending && ctx.trending.length > 0) {
-    add(ctx.trending[0].lead);
-  }
-
   const mixOrder = [
     "scripture", "church", "world", "missions", "inspiration",
-    "positive", "theology", "public_life", "family", "culture",
+    "theology", "public_life", "family", "culture",
   ];
   if (ctx?.categories) {
     for (const id of mixOrder) {
-      if (cited.length >= 6) break;
+      if (cited.length >= 5) break;
       const cat = ctx.categories.find((c) => c.id === id);
-      if (cat && cat.articles.length > 0) add(cat.articles[0]);
+      const next = cat?.articles.find((a) => !seenUrls.has(a.url));
+      if (next) add(next);
     }
   }
 
   if (cited.length === 0) {
-    for (const a of pickTop(articles, 5)) add(a);
+    for (const a of pickTop(articles, 8)) {
+      if (cited.length >= 5) break;
+      add(a);
+    }
   }
 
-  const headline = cited.length > 0
-    ? `Today in the Church: ${cited[0].title}`
+  const sources = [...new Set(cited.map((c) => c.source))].slice(0, 3);
+  const headline = sources.length > 0
+    ? `Today’s mix from ${sources.join(", ")}`
     : "No headlines available";
 
   return {
@@ -78,6 +81,7 @@ HARD RULES (violation = failure):
 - Mix: include at least one Scripture/study item, one church/world item, and one
   hopeful/service item when those exist in the input.
 - Prioritize themes covered by MULTIPLE sources. Do not let one loud feed dominate.
+- Do not feature Pope, Vatican, or Catholic-institution news. Skip any such item in the input.
 
 Respond as strict JSON: {"headline": str, "bullets": str[], "cited": [{"title","url","source"}]}
 The "cited" array must contain 4-6 of the actual input articles that the brief references.`;

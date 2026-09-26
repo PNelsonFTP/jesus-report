@@ -74,13 +74,12 @@ finalScore = priorityScore    (critical 40 / high 25 / medium 12 / low 4)
            + recencyScore     (100 → 48h half-life, floor 2)
            + importanceScore  (0–30; recency-gated to <96h)
            + homeBonus        (6 when scored in the feed’s home category)
-           − catholicDampen   (10 for listed Catholic-institution sources)
 ```
 
-Importance keywords (faith / service / civic) do **not** include Vatican,
-pope, encyclical, or synod — those used to pull Catholic wires to the top
-of the homepage. Catholic sources remain in `SOURCES`; they are medium/low
-priority plus the dampen so a same-age TGC / CT / RNS story ranks higher.
+Pope, Vatican, and Catholic-institution headlines are removed before
+scoring (`scripts/lib/editorial.ts`). A persecution, disaster, or public
+religious-liberty ruling can stay even if it mentions Catholics. Hierarchy
+words such as bishop are not importance boosts.
 
 Recency still dominates: a fresh medium item outranks a three-day-old
 critical one.
@@ -88,20 +87,23 @@ critical one.
 ### 3.4 Routing (`scripts/lib/router.ts`)
 
 1. Global cap: 6 articles per source per build
-2. Home category + `KEYWORDS` matches (aggregators in
-   `KEYWORD_AGNOSTIC_SOURCES` stay home-only)
-3. Hard age-window drop → score → starvation fill → Jaccard grouping →
-   per-source diversity cap
-4. Trending: ≥2 distinct sources and <72h (relax to 120h to reach 4
-   clusters). Cluster lead prefers a non-aggregator member within 10% of
-   the top score.
-5. Lead story: highest-scoring article under 72h
+2. Home category, plus at most one specific keyword cross-file (aggregators
+   in `KEYWORD_AGNOSTIC_SOURCES` stay home-only)
+3. World & Persecution keeps persecution wires and persecution stories only
+4. Hard age-window drop → score → starvation fill → story grouping →
+   at most 2 items per source in the visible 10
+5. Trending: ≥2 outlets, looser title match, under 72h (relax to 120h).
+   If nothing clusters, the row shows up to 4 top stories from Scripture,
+   church, missions, and persecution instead of sitting empty.
+6. Lead story: highest score under 72h in Scripture, church, missions, or
+   persecution, with a bonus for church, missions, and persecution. Titles
+   shorter than six words are skipped.
 
 ### 3.5 Age windows
 
 | Lane | Categories | Soft / hard days |
 |------|------------|------------------|
-| Fast | inspiration, positive, public_life, church | 3 / 5 |
+| Fast | inspiration, public_life, church | 3 / 5 |
 | Mid | missions, world, family, culture, music_arts | 7 / 10 |
 | Slow | scripture, theology, podcasts | 14 / 21 |
 
@@ -176,11 +178,11 @@ Returning visits with a full session cache skip the preview.
 | `theology` | THEOLOGY & APOLOGETICS |
 | `family` | FAMILY & LIFE |
 | `music_arts` | WORSHIP & ARTS |
-| `positive` | HOPEFUL NEWS |
 | `podcasts` | TALKS & PODCASTS |
 
-v1 has 46 live-probed feeds. See the comment block at the top of
-`scripts/sources.ts` for skipped URLs.
+Sections with fewer than 4 stories are hidden until they fill.
+Hopeful News (secular wires) is not on the homepage. See the comment
+block at the top of `scripts/sources.ts` for skipped URLs.
 
 ## 7. Related
 

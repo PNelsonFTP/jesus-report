@@ -36,7 +36,7 @@ the build exits 0 — the live homepage never goes blank.
 
 ```bash
 npm ci
-npm run build:data     # Fetch ~46 feeds + brief (needs network)
+npm run build:data     # Fetch feeds + brief (needs network)
 npm run dev            # http://localhost:5173/jesus-report/
 ```
 
@@ -88,8 +88,9 @@ category leads. The key never ships in the browser bundle.
 
 - Hard news (persecution, scandal, disaster) is allowed when it is real.
 - Inspiration and discipleship are first-class sections, not an afterthought.
-- Catholic-institution feeds stay on the homepage but are scored lower so they
-  do not own the lead story. See `scripts/lib/score.ts`.
+- Pope, Vatican, and Catholic-institution headlines are left off the homepage.
+  Persecution, disaster, and public religious-liberty rulings can still appear.
+  See `scripts/lib/editorial.ts`.
 - Generated copy must not invent verses, statistics, or quotes.
 
 ## Documentation

@@ -218,11 +218,16 @@ export default function App() {
 
   const staleData = dataIsStale(headlines?.generatedAt ?? null);
 
+  const homeCategories = useMemo(
+    () => filteredCategories.filter((c) => c.articles.length >= 4),
+    [filteredCategories],
+  );
+
   const columns = useMemo<CategoryBucket[][]>(() => {
     const cols: CategoryBucket[][] = [[], [], []];
-    filteredCategories.forEach((c, i) => cols[i % 3].push(c));
+    homeCategories.forEach((c, i) => cols[i % 3].push(c));
     return cols;
-  }, [filteredCategories]);
+  }, [homeCategories]);
 
   const columnVerses = [odbVerse, bibleGatewayVerse, youVersionVerse];
 
@@ -244,7 +249,6 @@ export default function App() {
         onOpenManageMutes={() => setManageOpen(true)}
         search={search}
         onSearchChange={setSearch}
-        churchYearLine={headlines?.churchYear?.line}
       />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6">
@@ -281,6 +285,22 @@ export default function App() {
               </div>
             )}
 
+            {headlines.feedStats.some((f) => !f.ok && (f.priority === "critical" || f.priority === "high")) && (
+              <div className="border border-[var(--crimson)] text-[var(--crimson)] px-4 py-2 mb-4 text-[12px] flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  Priority feeds did not update:{" "}
+                  {headlines.feedStats
+                    .filter((f) => !f.ok && (f.priority === "critical" || f.priority === "high"))
+                    .map((f) => f.source)
+                    .join(", ")}
+                  .
+                </span>
+                <button onClick={() => setFeedHealthOpen(true)} className="underline shrink-0">
+                  Feed health
+                </button>
+              </div>
+            )}
+
             {brief && <DailyBrief brief={brief} />}
             {headlines.trending.length > 0 && (
               <Trending stories={headlines.trending} onHover={showHover} onHoverEnd={hideHover} />
@@ -288,7 +308,11 @@ export default function App() {
             {lead && (
               <LeadStory article={lead} onHover={showHover} onHoverEnd={hideHover} />
             )}
-            <LatestStrip articles={latestArticles} onHover={showHover} onHoverEnd={hideHover} />
+            <LatestStrip
+              articles={latestArticles.filter((a) => a.url !== lead?.url)}
+              onHover={showHover}
+              onHoverEnd={hideHover}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {columns.map((col, i) => (
@@ -314,7 +338,7 @@ export default function App() {
               ))}
             </div>
 
-            {filteredCategories.length === 0 && (
+            {homeCategories.length === 0 && (
               <div className="opacity-60 text-center py-12">
                 {search
                   ? "No headlines match your search."

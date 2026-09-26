@@ -53,11 +53,13 @@ The Monday audit workflow opens or updates a `Feed audit:` issue.
 Reorder `CATEGORIES` in `scripts/sources.ts`. Columns fill top-to-bottom,
 left-to-right (`index % 3`).
 
-### Catholic ranking
+### Catholic, Pope, and Vatican headlines
 
-Catholic-institution sources are kept but medium/low plus a score dampen
-in `scripts/lib/score.ts`. Do not delete those feeds to “fix” mix; retune
-`CATHOLIC_SOURCE_PENALTY` or their `priority` instead.
+Those stories are not part of the homepage. Do not re-add Vatican News,
+Catholic News Agency, America Magazine, The Pillar, OSV News, Crux, or
+Aleteia. `scripts/lib/editorial.ts` also drops Pope, Vatican, and
+Catholic-institution headlines from every other wire. Persecution, disaster,
+and public religious-liberty rulings can remain.
 
 ## Troubleshooting
 
@@ -90,7 +92,7 @@ the workflow in the GitHub UI until you merge.
 ## Weekly checklist
 
 - [ ] Monday feed-audit green, or `sources.ts` updated from the issue
-- [ ] Footer feed health: most of 46 OK
+- [ ] Footer feed health: most feeds OK
 - [ ] Lead story + Daily Brief still relevant
 - [ ] `headlines.json` not ballooning
 

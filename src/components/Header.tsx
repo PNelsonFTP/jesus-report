@@ -11,7 +11,6 @@ interface HeaderProps {
   onOpenManageMutes: () => void;
   search: string;
   onSearchChange: (s: string) => void;
-  churchYearLine?: string | null;
 }
 
 function relativeUpdated(generatedAt: string | null): { label: string; stale: boolean } {
@@ -24,7 +23,7 @@ function relativeUpdated(generatedAt: string | null): { label: string; stale: bo
     if (diffH < 24) return `${Math.floor(diffH)}h ago`;
     return `${Math.floor(diffH / 24)}d ago`;
   })();
-  return { label: `updated ${ago}`, stale: diffH > 6 };
+  return { label: `site refreshed ${ago}`, stale: diffH > 6 };
 }
 
 export function Header({
@@ -40,7 +39,6 @@ export function Header({
   onOpenManageMutes,
   search,
   onSearchChange,
-  churchYearLine,
 }: HeaderProps) {
   const { label: updatedLabel, stale: dataStale } = relativeUpdated(generatedAt);
 
@@ -55,9 +53,14 @@ export function Header({
             <p className="text-[11px] uppercase tracking-widest opacity-60 mt-1">
               Faith-related headlines, refreshed hourly
             </p>
-            {churchYearLine && (
-              <p className="text-[12px] italic opacity-70 mt-1">{churchYearLine}</p>
-            )}
+            <p className="text-[12px] opacity-70 mt-1">
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs flex-wrap justify-end">
@@ -69,21 +72,21 @@ export function Header({
               className={`px-2 py-1 border rounded ${view === "bookmarks" ? "bg-[var(--gold)] text-black border-[var(--gold)]" : "opacity-80"}`}
               title="Bookmarks (save permanently)"
             >
-              ★ {bookmarksCount}
+              ★ Bookmarks {bookmarksCount}
             </button>
             <button
               onClick={() => onSetView(view === "queue" ? "home" : "queue")}
               className={`px-2 py-1 border rounded ${view === "queue" ? "bg-[var(--crimson)] text-white border-[var(--crimson)]" : "opacity-80"}`}
               title="Read-later queue (clears on open)"
             >
-              ◷ {queueCount}
+              ◷ Read later {queueCount}
             </button>
             <button
               onClick={onOpenManageMutes}
               className="px-2 py-1 border rounded opacity-80"
               title="Manage hidden sources & sections"
             >
-              ✕ {mutedCount}
+              ✕ Hidden {mutedCount}
             </button>
             <button
               onClick={onToggleTheme}

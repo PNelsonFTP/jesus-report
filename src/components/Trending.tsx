@@ -10,11 +10,13 @@ interface TrendingProps {
 export function Trending({ stories, onHover, onHoverEnd }: TrendingProps) {
   if (stories.length === 0) return null;
 
+  const multi = stories.some((s) => (s.kind ?? (s.sourceCount >= 2 ? "multi" : "top")) === "multi");
+
   return (
     <section className="mb-6 p-4 border-2 border-[var(--crimson)] bg-[var(--crimson)]/[0.04]">
       <div className="flex items-baseline justify-between mb-3">
         <h2 className="section-heading" style={{ borderBottom: "none", marginBottom: 0 }}>
-          ▶ TRENDING — covered by multiple outlets
+          {multi ? "▶ TRENDING — covered by multiple outlets" : "▶ TOP STORIES"}
         </h2>
         <span className="text-[10px] uppercase tracking-wider opacity-50">
           {stories.length} stories
@@ -41,9 +43,11 @@ export function Trending({ stories, onHover, onHoverEnd }: TrendingProps) {
                 {s.lead.title}
               </a>
               <div className="flex items-center gap-2 mt-0.5 text-[11px] opacity-70 flex-wrap">
-                <span className="related-badge">
-                  {s.sourceCount} sources
-                </span>
+                {s.sourceCount >= 2 && (
+                  <span className="related-badge">
+                    {s.sourceCount} sources
+                  </span>
+                )}
                 <span>{timeAgoDisplay(s.lead.publishedAt)}</span>
                 <span className="opacity-70">·</span>
                 <span className="uppercase tracking-wider text-[10px]">

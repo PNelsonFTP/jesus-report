@@ -321,7 +321,7 @@ async function fetchOneFeed(src: FeedSource): Promise<{ articles: Article[]; ok:
 
 export async function fetchAllFeeds(): Promise<{
   articles: Article[];
-  feedStats: { source: string; ok: boolean; count: number }[];
+  feedStats: { source: string; ok: boolean; count: number; priority: FeedSource["priority"] }[];
 }> {
   console.log(`Fetching ${SOURCES.length} feeds (2 concurrent per host)…`);
   const results = await Promise.all(
@@ -332,7 +332,12 @@ export async function fetchAllFeeds(): Promise<{
     })
   );
 
-  const feedStats = results.map((r) => ({ source: r.src.name, ok: r.ok, count: r.articles.length }));
+  const feedStats = results.map((r) => ({
+    source: r.src.name,
+    ok: r.ok,
+    count: r.articles.length,
+    priority: r.src.priority,
+  }));
   let articles = results.flatMap((r) => r.articles);
 
   const gnUrls = articles.filter((a) => isGoogleNewsUrl(a.url)).map((a) => a.url);

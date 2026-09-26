@@ -4,6 +4,10 @@ export function DailyVerse({ verse }: { verse: DailyVerseData | null }) {
   if (!verse) return null;
 
   const cite = [verse.reference, verse.version].filter(Boolean).join(" · ");
+  const day = new Date(verse.fetchedAt);
+  const dayLabel = Number.isNaN(day.getTime())
+    ? ""
+    : day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 
   return (
     <section>
@@ -20,7 +24,10 @@ export function DailyVerse({ verse }: { verse: DailyVerseData | null }) {
           </span>
         )}
         <span className="block text-[14px] italic leading-snug">“{verse.text}”</span>
-        <span className="block text-[12px] opacity-60 mt-1">{cite}</span>
+        <span className="block text-[12px] opacity-60 mt-1">
+          {cite}
+          {dayLabel ? ` · ${dayLabel}` : ""}
+        </span>
       </a>
     </section>
   );
